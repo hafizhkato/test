@@ -32,6 +32,29 @@ const Create: React.FC = () => {
           console.error("Error downloading CSV:", error);
       }
   };
+
+  // WebSocket useEffect - Connects WebSocket & listens for messages
+  useEffect(() => {
+    const socket = new WebSocket("wss://z8rnb7qh00.execute-api.ap-southeast-1.amazonaws.com/production/");
+
+    socket.onopen = () => console.log("Connected to WebSocket ✅");
+
+    socket.onmessage = (event) => {
+        console.log("WebSocket message received:", event.data);
+        try {
+            const data = JSON.parse(event.data);
+            if (data.status === "ready" && data.url) {
+                window.location.href = data.url; // Auto-download CSV when ready
+            }
+        } catch (error) {
+            console.error("Error processing WebSocket message:", error);
+        }
+    };
+
+    socket.onclose = () => console.log("WebSocket disconnected ❌");
+
+    return () => socket.close(); // Cleanup WebSocket on component unmount
+}, []);
     
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
