@@ -10,6 +10,28 @@ import Header from '../../components/header';
 
 const Create: React.FC = () => {
     const [file, setFile] = useState<File | null>(null);
+
+    const downloadCSV = async (): Promise<void> => {
+      try {
+          const response: Response = await fetch("https://l3qz1unms6.execute-api.ap-southeast-1.amazonaws.com/prod");
+          if (!response.ok) throw new Error("Download failed");
+  
+          const blob: Blob = await response.blob();
+          const url: string = window.URL.createObjectURL(blob);
+          const a: HTMLAnchorElement = document.createElement("a");
+          
+          a.href = url;
+          a.download = "extracted_data.csv";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+  
+          // Clean up the object URL to free memory
+          window.URL.revokeObjectURL(url);
+      } catch (error) {
+          console.error("Error downloading CSV:", error);
+      }
+  };
     
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,6 +102,8 @@ const Create: React.FC = () => {
         title="Create Your Project" 
         subtitle="Upload, manage, and download your files" 
       />
+      
+      <button onClick={downloadCSV}>Download CSV</button>;
       
       <Box
         sx={{
