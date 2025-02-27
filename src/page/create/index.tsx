@@ -6,12 +6,14 @@ import { uploadData, remove, list } from 'aws-amplify/storage';
 import { useState, useEffect } from "react";
 import Header from '../../components/header';
 import { fetchAuthSession } from "aws-amplify/auth";
+import { useAuthenticator } from "@aws-amplify/ui-react";
 
 
 
 const Create: React.FC = () => {
     const [file, setFile] = useState<File | null>(null);
     const [identityId, setIdentityId] = useState<string | null>(null);
+    const { user } = useAuthenticator((context) => [context.user]); // Get user info
 
     useEffect(() => {
       const getIdentityId = async () => {
@@ -22,17 +24,19 @@ const Create: React.FC = () => {
           if (identityId) {
             setIdentityId(identityId);
           }
+          
         } catch (error) {
           console.error("Error fetching identity ID:", error);
         }
       };
   
       getIdentityId();
-    }, []);
+    }, [user]);
 
 
   // WebSocket useEffect - Connects WebSocket & listens for messages
   useEffect(() => {
+    
     if (!identityId) return; // Ensure identityId is available
 
     console.log("Authenticated user ID:", identityId);
@@ -55,7 +59,7 @@ const Create: React.FC = () => {
     socket.onclose = () => console.log("WebSocket disconnected ❌");
 
     return () => socket.close(); // Cleanup WebSocket on component unmount
-}, []);
+}, [identityId]);
     
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
