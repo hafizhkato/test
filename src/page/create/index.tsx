@@ -5,16 +5,23 @@ import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { uploadData, remove, list } from 'aws-amplify/storage';
 import { useState, useEffect } from "react";
 import Header from '../../components/header';
+import { useAuthenticator } from "@aws-amplify/ui-react";
 
 
 
 const Create: React.FC = () => {
     const [file, setFile] = useState<File | null>(null);
+    const { user } = useAuthenticator((context) => [context.user]); // Get user info
 
 
   // WebSocket useEffect - Connects WebSocket & listens for messages
   useEffect(() => {
-    const socket = new WebSocket("wss://z8rnb7qh00.execute-api.ap-southeast-1.amazonaws.com/production/");
+    if (!user) return; // Ensure user is logged in
+
+
+    const userId = user.signInDetails?.loginId; // Get user ID
+    console.log("Authenticated user ID:", userId);
+    const socket = new WebSocket(`wss://z8rnb7qh00.execute-api.ap-southeast-1.amazonaws.com/production?user_id=${userId}`);
 
     socket.onopen = () => console.log("Connected to WebSocket ✅");
 
