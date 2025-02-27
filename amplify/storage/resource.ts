@@ -8,9 +8,8 @@ export const storage = defineStorage({
       allow.guest.to(['read']),
       allow.entity('identity').to(['read', 'write', 'delete'])
     ],
-    'image-documents/*': [
+    'image-documents/{entity_id}*': [
       allow.authenticated.to(['read','write', 'delete']),
-      allow.guest.to(['read','write', 'delete'])
     ],
 
 }),

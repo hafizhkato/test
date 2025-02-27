@@ -11,27 +11,6 @@ import Header from '../../components/header';
 const Create: React.FC = () => {
     const [file, setFile] = useState<File | null>(null);
 
-    const downloadCSV = async (): Promise<void> => {
-      try {
-          const response: Response = await fetch("https://l3qz1unms6.execute-api.ap-southeast-1.amazonaws.com/prod");
-          if (!response.ok) throw new Error("Download failed");
-  
-          const blob: Blob = await response.blob();
-          const url: string = window.URL.createObjectURL(blob);
-          const a: HTMLAnchorElement = document.createElement("a");
-          
-          a.href = url;
-          a.download = "extracted_data.csv";
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-  
-          // Clean up the object URL to free memory
-          window.URL.revokeObjectURL(url);
-      } catch (error) {
-          console.error("Error downloading CSV:", error);
-      }
-  };
 
   // WebSocket useEffect - Connects WebSocket & listens for messages
   useEffect(() => {
@@ -89,7 +68,7 @@ const Create: React.FC = () => {
             try {
     
               // List all objects in the user's profile picture folder
-              const { items } = await list({ path: 'image-documents/', });
+              const { items } = await list({ path: ({identityId}) => `image-documents/${identityId}/`, });
         
               // Ensure there are items before attempting to delete
               if (items.length > 0) {
@@ -102,7 +81,7 @@ const Create: React.FC = () => {
         
               // Upload new file after deletion
               await uploadData({
-                path: `image-documents/${file.name}`,
+                path: ({identityId}) => `image-documents/${identityId}/${file.name}`,
                 data: file,
                   
               });
@@ -125,8 +104,6 @@ const Create: React.FC = () => {
         title="Create Your Project" 
         subtitle="Upload, manage, and download your files" 
       />
-      
-      <button onClick={downloadCSV}>Download CSV</button>;
       
       <Box
         sx={{
