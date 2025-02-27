@@ -5,23 +5,38 @@ import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { uploadData, remove, list } from 'aws-amplify/storage';
 import { useState, useEffect } from "react";
 import Header from '../../components/header';
-import { useAuthenticator } from "@aws-amplify/ui-react";
+import { fetchAuthSession } from "aws-amplify/auth";
 
 
 
 const Create: React.FC = () => {
     const [file, setFile] = useState<File | null>(null);
-    const { user } = useAuthenticator((context) => [context.user]); // Get user info
+    const [identityId, setIdentityId] = useState<string | null>(null);
+
+    useEffect(() => {
+      const getIdentityId = async () => {
+        try {
+          const session = await fetchAuthSession(); // Get session details
+          const identityId = session.identityId; // Get identity ID
+          console.log("Identity ID:", identityId);
+          if (identityId) {
+            setIdentityId(identityId);
+          }
+        } catch (error) {
+          console.error("Error fetching identity ID:", error);
+        }
+      };
+  
+      getIdentityId();
+    }, []);
 
 
   // WebSocket useEffect - Connects WebSocket & listens for messages
   useEffect(() => {
-    if (!user) return; // Ensure user is logged in
+    if (!identityId) return; // Ensure identityId is available
 
-
-    const userId = user.signInDetails?.loginId; // Get user ID
-    console.log("Authenticated user ID:", userId);
-    const socket = new WebSocket(`wss://z8rnb7qh00.execute-api.ap-southeast-1.amazonaws.com/production?user_id=${userId}`);
+    console.log("Authenticated user ID:", identityId);
+    const socket = new WebSocket(`wss://z8rnb7qh00.execute-api.ap-southeast-1.amazonaws.com/production?user_id=${identityId}`);
 
     socket.onopen = () => console.log("Connected to WebSocket ✅");
 
